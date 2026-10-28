@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+.terraform
+*.tsbuildinfo
+package-lock.json
+docs/screenshots
+load-tests/results

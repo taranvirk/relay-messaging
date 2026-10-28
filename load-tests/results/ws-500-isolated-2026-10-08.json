@@ -1,0 +1,222 @@
+{
+    "metrics": {
+        "vus": {
+            "value": 169,
+            "min": 0,
+            "max": 500
+        },
+        "data_received": {
+            "count": 21679778,
+            "rate": 336585.46775632346
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(95)": 710.3333683000001,
+            "p(99)": 711.74036806,
+            "min": 84.754533,
+            "med": 694.504621,
+            "avg": 497.1170906666667,
+            "max": 712.092118
+        },
+        "ws_sessions": {
+            "count": 500,
+            "rate": 7.762659464417104
+        },
+        "checks": {
+            "passes": 1000,
+            "fails": 0,
+            "value": 1
+        },
+        "ws_connection_errors": {
+            "fails": 500,
+            "passes": 0,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "vus_max": {
+            "value": 500,
+            "min": 500,
+            "max": 500
+        },
+        "http_reqs": {
+            "count": 3,
+            "rate": 0.04657595678650263
+        },
+        "message_ack_latency": {
+            "p(95)": 205.2,
+            "p(99)": 397.35999999999956,
+            "min": 30,
+            "med": 46,
+            "avg": 66.40350877192982,
+            "max": 506,
+            "thresholds": {
+                "p(95)<1000": false
+            }
+        },
+        "message_delivery_latency": {
+            "min": 13,
+            "med": 48,
+            "avg": 65.3076102038638,
+            "max": 531,
+            "p(95)": 200,
+            "p(99)": 502,
+            "thresholds": {
+                "p(95)<1000": false
+            }
+        },
+        "http_req_connecting": {
+            "p(95)": 1.2303549,
+            "p(99)": 1.33971978,
+            "min": 0,
+            "med": 0,
+            "avg": 0.455687,
+            "max": 1.367061
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 3,
+            "value": 0
+        },
+        "ws_connecting": {
+            "min": 102.096307,
+            "med": 1606.5789949999998,
+            "avg": 1464.2597135479996,
+            "max": 2819.171116,
+            "p(95)": 2586.7726779,
+            "p(99)": 2709.37883526
+        },
+        "iterations": {
+            "count": 500,
+            "rate": 7.762659464417104,
+            "thresholds": {
+                "count>=500": false
+            }
+        },
+        "http_req_receiving": {
+            "min": 0.258392,
+            "med": 0.400863,
+            "avg": 0.44683633333333334,
+            "max": 0.681254,
+            "p(95)": 0.6532149,
+            "p(99)": 0.67564618
+        },
+        "message_acks": {
+            "count": 57,
+            "rate": 0.8849431789435499,
+            "thresholds": {
+                "count>0": false
+            }
+        },
+        "http_req_waiting": {
+            "max": 710.794383,
+            "p(95)": 709.1198525,
+            "p(99)": 710.4594769,
+            "min": 84.387865,
+            "med": 694.049078,
+            "avg": 496.41044199999993
+        },
+        "message_deliveries": {
+            "count": 28107,
+            "rate": 436.3701391327431,
+            "thresholds": {
+                "count>0": false
+            }
+        },
+        "message_errors": {
+            "passes": 0,
+            "fails": 57,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_req_duration": {
+            "med": 694.504621,
+            "avg": 497.1170906666667,
+            "max": 712.092118,
+            "p(95)": 710.3333683000001,
+            "p(99)": 711.74036806,
+            "min": 84.754533
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "avg": 0,
+            "max": 0,
+            "p(95)": 0,
+            "p(99)": 0,
+            "min": 0
+        },
+        "data_sent": {
+            "count": 305699,
+            "rate": 4746.074471225688
+        },
+        "ws_msgs_received": {
+            "count": 31231,
+            "rate": 484.8712354664212
+        },
+        "ws_msgs_sent": {
+            "count": 1557,
+            "rate": 24.172921572194863
+        },
+        "ws_session_duration": {
+            "min": 60106.01337,
+            "med": 61608.799348500004,
+            "avg": 61466.199705675994,
+            "max": 62821.268161,
+            "p(95)": 62588.91355815,
+            "p(99)": 62711.569847470004
+        },
+        "http_req_blocked": {
+            "min": 0.010034,
+            "med": 0.016727,
+            "avg": 3.461953333333333,
+            "max": 10.359099,
+            "p(95)": 9.324861799999999,
+            "p(99)": 10.15225156
+        },
+        "iteration_duration": {
+            "p(95)": 62589.266643949995,
+            "p(99)": 62711.901392969994,
+            "min": 60106.194473,
+            "med": 61609.1235065,
+            "avg": 61466.72766470999,
+            "max": 62821.56275
+        },
+        "http_req_sending": {
+            "avg": 0.2598123333333333,
+            "max": 0.616481,
+            "p(95)": 0.5656604999999999,
+            "p(99)": 0.6063168999999999,
+            "min": 0.05468,
+            "med": 0.108276
+        }
+    },
+    "setup_data": {
+        "conversationId": "e887d9ea-821a-48fa-bd1d-bec5826294a0",
+        "recipientCookie": "relay_session=[REDACTED_TEST_SESSION]",
+        "senderCookie": "relay_session=[REDACTED_TEST_SESSION]"
+    },
+    "root_group": {
+        "groups": {},
+        "checks": {
+                "websocket upgraded": {
+                    "passes": 500,
+                    "fails": 0,
+                    "name": "websocket upgraded",
+                    "path": "::websocket upgraded",
+                    "id": "882f3becc06b9e2de7bdcde06c66358b"
+                },
+                "socket authenticated": {
+                    "name": "socket authenticated",
+                    "path": "::socket authenticated",
+                    "id": "bf3aae66a3cac4d92d1c8b6b544884c0",
+                    "passes": 500,
+                    "fails": 0
+                }
+            },
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+}

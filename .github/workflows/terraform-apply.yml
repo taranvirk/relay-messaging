@@ -1,0 +1,43 @@
+name: Terraform apply
+on:
+  push:
+    branches: [main]
+    paths: ['infrastructure/terraform/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: relay-terraform-production
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/main' && vars.AWS_DEPLOYMENT_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production-infrastructure
+    env:
+      TF_VAR_environment: prod
+      TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+      TF_VAR_origin_domain_name: ${{ vars.ORIGIN_DOMAIN_NAME }}
+      TF_VAR_origin_certificate_arn: ${{ vars.ORIGIN_CERTIFICATE_ARN }}
+      TF_VAR_alarm_email: ${{ vars.ALARM_EMAIL }}
+    defaults:
+      run:
+        working-directory: infrastructure/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_TERRAFORM_APPLY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" -backend-config="key=relay/prod/terraform.tfstate" -backend-config="region=${{ vars.AWS_REGION }}" -backend-config="dynamodb_table=${{ vars.TF_LOCK_TABLE }}" -backend-config="encrypt=true"
+      - run: terraform validate
+      - run: terraform plan -input=false -out=tfplan
+      - run: terraform apply -input=false tfplan

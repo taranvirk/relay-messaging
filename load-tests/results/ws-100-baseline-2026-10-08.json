@@ -1,0 +1,222 @@
+{
+    "root_group": {
+        "checks": {
+            "websocket upgraded": {
+                "path": "::websocket upgraded",
+                "id": "882f3becc06b9e2de7bdcde06c66358b",
+                "passes": 100,
+                "fails": 0,
+                "name": "websocket upgraded"
+            },
+            "socket authenticated": {
+                "fails": 0,
+                "name": "socket authenticated",
+                "path": "::socket authenticated",
+                "id": "bf3aae66a3cac4d92d1c8b6b544884c0",
+                "passes": 100
+            }
+        },
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {}
+    },
+    "metrics": {
+        "http_req_connecting": {
+            "min": 0,
+            "med": 0,
+            "avg": 0.35518333333333335,
+            "max": 1.06555,
+            "p(95)": 0.9589949999999999,
+            "p(99)": 1.044239
+        },
+        "message_ack_latency": {
+            "avg": 31.80701754385965,
+            "max": 78,
+            "p(95)": 39.99999999999998,
+            "p(99)": 62.319999999999936,
+            "min": 21,
+            "med": 31,
+            "thresholds": {
+                "p(95)<1000": false
+            }
+        },
+        "http_req_waiting": {
+            "p(95)": 663.7680436,
+            "p(99)": 675.27521672,
+            "min": 69.967106,
+            "med": 534.312346,
+            "avg": 427.477154,
+            "max": 678.15201
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 3,
+            "value": 0
+        },
+        "data_received": {
+            "count": 4426381,
+            "rate": 71673.0860237188
+        },
+        "http_req_tls_handshaking": {
+            "min": 0,
+            "med": 0,
+            "avg": 0,
+            "max": 0,
+            "p(95)": 0,
+            "p(99)": 0
+        },
+        "data_sent": {
+            "count": 70899,
+            "rate": 1148.0146254910364
+        },
+        "ws_msgs_received": {
+            "count": 6367,
+            "rate": 103.09608203925909
+        },
+        "ws_sessions": {
+            "count": 100,
+            "rate": 1.619225412898682
+        },
+        "http_req_sending": {
+            "med": 0.061702,
+            "avg": 0.090604,
+            "max": 0.18128,
+            "p(95)": 0.16932219999999998,
+            "p(99)": 0.17888843999999998,
+            "min": 0.02883
+        },
+        "iterations": {
+            "count": 100,
+            "rate": 1.619225412898682,
+            "thresholds": {
+                "count>=100": false
+            }
+        },
+        "http_req_duration": {
+            "avg": 427.7715716666667,
+            "max": 678.600986,
+            "p(95)": 664.1953020000001,
+            "p(99)": 675.7198492,
+            "min": 70.169583,
+            "med": 534.544146
+        },
+        "vus": {
+            "min": 0,
+            "max": 100,
+            "value": 100
+        },
+        "message_acks": {
+            "count": 57,
+            "rate": 0.9229584853522488,
+            "thresholds": {
+                "count>0": false
+            }
+        },
+        "message_delivery_latency": {
+            "min": 18,
+            "med": 31,
+            "avg": 31.976608187134502,
+            "max": 86,
+            "p(95)": 44,
+            "p(99)": 76,
+            "thresholds": {
+                "p(95)<1000": false
+            }
+        },
+        "http_req_duration{expected_response:true}": {
+            "min": 70.169583,
+            "med": 534.544146,
+            "avg": 427.7715716666667,
+            "max": 678.600986,
+            "p(95)": 664.1953020000001,
+            "p(99)": 675.7198492
+        },
+        "ws_connection_errors": {
+            "passes": 0,
+            "fails": 100,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_req_receiving": {
+            "p(99)": 0.26581502,
+            "min": 0.170098,
+            "med": 0.173647,
+            "avg": 0.20381366666666667,
+            "max": 0.267696,
+            "p(95)": 0.2582911
+        },
+        "http_reqs": {
+            "count": 3,
+            "rate": 0.04857676238696046
+        },
+        "ws_session_duration": {
+            "min": 60028.525687,
+            "med": 60268.6270565,
+            "avg": 60236.64693874999,
+            "max": 60434.643646,
+            "p(95)": 60415.34416735,
+            "p(99)": 60431.444877789996
+        },
+        "message_deliveries": {
+            "count": 5643,
+            "rate": 91.37289004987262,
+            "thresholds": {
+                "count>0": false
+            }
+        },
+        "http_req_blocked": {
+            "min": 0.005522,
+            "med": 0.005569,
+            "avg": 1.8551483333333334,
+            "max": 5.554354,
+            "p(95)": 4.9994755,
+            "p(99)": 5.4433783
+        },
+        "ws_connecting": {
+            "max": 432.884662,
+            "p(95)": 413.70129534999995,
+            "p(99)": 429.86446603,
+            "min": 26.497832,
+            "med": 267.9458805,
+            "avg": 235.09536318
+        },
+        "message_errors": {
+            "passes": 0,
+            "fails": 57,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "vus_max": {
+            "value": 100,
+            "min": 100,
+            "max": 100
+        },
+        "checks": {
+            "passes": 200,
+            "fails": 0,
+            "value": 1
+        },
+        "ws_msgs_sent": {
+            "count": 357,
+            "rate": 5.780634724048295
+        },
+        "iteration_duration": {
+            "min": 60029.01782,
+            "med": 60268.944277,
+            "avg": 60236.97778810002,
+            "max": 60434.90378,
+            "p(95)": 60415.51618945,
+            "p(99)": 60431.84465723
+        }
+    },
+    "setup_data": {
+        "conversationId": "e887d9ea-821a-48fa-bd1d-bec5826294a0",
+        "recipientCookie": "relay_session=[REDACTED_TEST_SESSION]",
+        "senderCookie": "relay_session=[REDACTED_TEST_SESSION]"
+    }
+}

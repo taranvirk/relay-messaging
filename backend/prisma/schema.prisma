@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+model User {
+  id             String               @id @default(uuid()) @db.Uuid
+  username       String               @unique @db.VarChar(32)
+  displayName    String               @db.VarChar(80)
+  email          String               @unique @db.VarChar(254)
+  passwordHash   String
+  avatarUrl      String?
+  lastSeenAt     DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  memberships    ConversationMember[]
+  conversations  Conversation[]       @relation("ConversationCreator")
+  messages       Message[]
+  receipts       MessageReceipt[]
+
+  @@index([displayName])
+  @@index([lastSeenAt])
+}
+
+model Conversation {
+  id          String               @id @default(uuid()) @db.Uuid
+  type        ConversationType
+  name        String?              @db.VarChar(100)
+  directKey   String?              @unique @db.VarChar(80)
+  createdById String?              @db.Uuid
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  createdBy   User?                @relation("ConversationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  members     ConversationMember[]
+  messages    Message[]
+
+  @@index([updatedAt])
+}
+
+model ConversationMember {
+  id                String      @id @default(uuid()) @db.Uuid
+  conversationId    String      @db.Uuid
+  userId            String      @db.Uuid
+  role              MemberRole  @default(MEMBER)
+  joinedAt          DateTime    @default(now())
+  lastReadMessageId String?     @db.Uuid
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadMessage   Message?      @relation("LastReadMessage", fields: [lastReadMessageId], references: [id], onDelete: SetNull)
+
+  @@unique([conversationId, userId])
+  @@index([userId, joinedAt])
+  @@index([conversationId, role])
+}
+
+model Message {
+  id               String               @id @default(uuid()) @db.Uuid
+  conversationId   String               @db.Uuid
+  senderId         String?              @db.Uuid
+  clientMessageId  String?              @db.VarChar(100)
+  content          String               @db.Text
+  type             MessageType          @default(TEXT)
+  replyToMessageId String?               @db.Uuid
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  deletedAt        DateTime?
+  conversation     Conversation         @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender           User?                @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  replyTo          Message?             @relation("MessageReplies", fields: [replyToMessageId], references: [id], onDelete: SetNull)
+  replies          Message[]            @relation("MessageReplies")
+  receipts         MessageReceipt[]
+  attachments      Attachment[]
+  readByMembers    ConversationMember[] @relation("LastReadMessage")
+
+  @@unique([senderId, clientMessageId])
+  @@index([conversationId, createdAt, id])
+  @@index([senderId, createdAt])
+}
+
+model MessageReceipt {
+  id          String    @id @default(uuid()) @db.Uuid
+  messageId   String    @db.Uuid
+  userId      String    @db.Uuid
+  deliveredAt DateTime?
+  readAt      DateTime?
+  message     Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId, readAt])
+}
+
+model Attachment {
+  id         String   @id @default(uuid()) @db.Uuid
+  messageId  String   @db.Uuid
+  fileName   String   @db.VarChar(255)
+  mimeType   String   @db.VarChar(120)
+  fileSize   Int
+  storageKey String   @unique
+  createdAt  DateTime @default(now())
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+}
+
+model OutboxJob {
+  id           String    @id @default(uuid()) @db.Uuid
+  payload      Json
+  createdAt    DateTime  @default(now())
+  dispatchedAt DateTime?
+  attempts     Int       @default(0)
+  lastError    String?
+
+  @@index([dispatchedAt, createdAt])
+}
+
+model AuditEvent {
+  id         String   @id @db.Uuid
+  type       String   @db.VarChar(64)
+  messageId  String   @db.Uuid
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}

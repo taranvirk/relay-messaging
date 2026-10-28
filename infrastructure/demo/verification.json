@@ -1,0 +1,91 @@
+{
+  "date": "2026-10-27",
+  "url": "https://3.131.19.155",
+  "projectId": "806079021406",
+  "region": "us-east-2",
+  "preRebootSmoke": {
+    "passed": true,
+    "httpsTrusted": true,
+    "checks": [
+      "readiness",
+      "unauthenticated denial",
+      "registration",
+      "sign-in",
+      "secure cookies",
+      "private conversation",
+      "origin rejection",
+      "WebSocket connect",
+      "typing",
+      "two-way message delivery",
+      "read receipt",
+      "idempotent retry",
+      "persisted history"
+    ],
+    "conversationId": "ea02f39f-7ba0-4298-8427-7bf86be18a17",
+    "persistedMessageIds": [
+      "50007bac-5ca6-446b-bb66-8e568928987e",
+      "4cef2b59-b0aa-42eb-8702-a9efc9e38398"
+    ]
+  },
+  "postRebootSmoke": {
+    "passed": true,
+    "bootTimeUtc": "2026-10-27T05:39:49Z",
+    "checks": ["readiness", "persisted sessions", "persisted history", "WebSocket reconnect"],
+    "containers": "All six running; PostgreSQL, Redis, both APIs and frontend healthy"
+  },
+  "publicTcpProbe": {
+    "open": [80, 443],
+    "filtered": [22, 3000, 5432, 6379, 2019]
+  },
+  "administration": { "method": "SSM", "sshd": "masked and inactive" },
+  "logoutRevocationPassed": true,
+  "temporaryTestSessionFileRemoved": true,
+  "planTypeAfterDeployment": "FREE",
+  "planStatusAfterDeployment": "ACTIVE",
+  "logoutFullPageFollowUp": {
+    "release": "20261027-logout2",
+    "frontendDigest": "sha256:0369a09ddb3d383756460b9a2123e7dd4a42b839a6447b45247c333bb61521b4",
+    "asset": "/assets/index-v9Uwstbo.js",
+    "deploymentCommandId": "4dcc4dda-ce83-4eaa-8a6d-cc2f041e52f1",
+    "deploymentStatus": "Success",
+    "testsPassed": 21,
+    "typecheckPassed": true,
+    "lintPassed": true,
+    "htmlPathsVerifiedNoStore": ["/messages", "/login", "/index.html"],
+    "realAwsBackendBrowserTest": {
+      "method": "Loopback proxy of deployed assets and actual cloud API/WebSocket with synthetic user; no real credentials",
+      "socketConnectedBeforeLogout": true,
+      "logoutResponse": 204,
+      "documentNavigationAfterLogout": "/login",
+      "sessionStatusAfterLogout": 401,
+      "reopeningMessagesRedirectedToLogin": true
+    },
+    "basicScanFindings": {},
+    "databaseOrRedisRecreated": false
+  },
+  "logoutUiFix": {
+    "release": "20261027-logout1",
+    "frontendDigest": "sha256:8ce8c805613a5ed0dd70c63979427f1dbb260de9cc3802dfaeede410beb07ae3",
+    "publicFrontendAsset": "/assets/index-CBSoCEOX.js",
+    "publicAssetStatus": 200,
+    "readiness": "ready",
+    "frontendTestsPassed": 21,
+    "typecheckPassed": true,
+    "lintPassed": true,
+    "browserCheck": "Exact production image with synthetic local session: click logout navigates to login and stays signed out after reload",
+    "deploymentCommandId": "3ae33f57-aa04-4778-84c6-cf00e2885ba4",
+    "basicImageScan": { "status": "COMPLETE", "findingSeverityCounts": {} },
+    "dataServicesRecreated": false
+  },
+  "ecrBasicScan": {
+    "api": { "status": "COMPLETE", "findingSeverityCounts": {} },
+    "frontendPatchedDemo2": { "status": "COMPLETE", "findingSeverityCounts": {} }
+  },
+  "certificate": {
+    "issuer": "Let's Encrypt YE2",
+    "ipSan": "3.131.19.155",
+    "notBefore": "2026-10-27T04:39:04Z",
+    "notAfter": "2026-11-02T20:39:03Z",
+    "renewal": "Caddy automatic renewal with persistent certificate storage"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "host": "3.131.19.155",
+  "tag": "20261027-logout2",
+  "apiImage": "806079021406.dkr.ecr.us-east-2.amazonaws.com/relay-demo-api@sha256:2b062b5b201cedaf84939d8255dd2b11ed3d5f29735f3eaad666e25aa8d365bf",
+  "webImage": "806079021406.dkr.ecr.us-east-2.amazonaws.com/relay-demo-web@sha256:0369a09ddb3d383756460b9a2123e7dd4a42b839a6447b45247c333bb61521b4",
+  "composeDownloadUrl": "https://github.com/docker/compose/releases/download/v5.6.1/docker-compose-linux-x86_64",
+  "composeSha256": "47737f4236e6d3ccea7291995203f8f018058783b4c3a9469119811a0b5db8c0"
+}

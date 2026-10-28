@@ -1,0 +1,43 @@
+{
+  "Policies": [
+    {
+      "Policy": {
+        "Id": "IamPolicyAutopilot",
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ecr:BatchCheckLayerAvailability",
+              "ecr:BatchGetImage",
+              "ecr:BatchImportUpstreamImage",
+              "ecr:CreateRepository",
+              "ecr:GetDownloadUrlForLayer",
+              "ecr:TagResource"
+            ],
+            "Resource": [
+              "arn:aws:ecr:us-east-2:806079021406:repository/relay-demo-api",
+              "arn:aws:ecr:us-east-2:806079021406:repository/relay-demo-web"
+            ]
+          },
+          {
+            "Effect": "Allow",
+            "Action": ["ecr:GetAuthorizationToken"],
+            "Resource": ["*"]
+          }
+        ]
+      },
+      "PolicyType": "Identity"
+    }
+  ],
+  "Warnings": [
+    {
+      "WarningType": "WildcardResource",
+      "Location": {
+        "PolicyIndex": 0,
+        "StatementIndex": 1
+      },
+      "Message": "Statement could not be scoped to specific resources and uses Resource \"*\". Review whether broad resource access is intended."
+    }
+  ]
+}

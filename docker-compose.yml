@@ -1,0 +1,118 @@
+name: relay
+
+x-backend: &backend
+  image: relay-api:local
+  build:
+    context: .
+    dockerfile: backend/Dockerfile
+  restart: unless-stopped
+  environment: &backend-env
+    NODE_ENV: development
+    PORT: 3000
+    DATABASE_URL: postgresql://relay:relay@postgres:5432/relay?schema=public
+    REDIS_URL: redis://redis:6379
+    JWT_SECRET: local-only-change-this-relay-secret-32-characters
+    FRONTEND_ORIGIN: http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173,http://127.0.0.1:5173
+    COOKIE_SECURE: 'false'
+    LOG_LEVEL: info
+    AWS_REGION: ${AWS_REGION:-us-east-1}
+    QUEUE_URL: ${QUEUE_URL:-}
+    ATTACHMENTS_BUCKET: ${ATTACHMENTS_BUCKET:-}
+    AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+    AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+    AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+    redis:
+      condition: service_healthy
+  healthcheck:
+    test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/api/health/ready']
+    interval: 15s
+    timeout: 5s
+    retries: 5
+  networks: [relay]
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: relay
+      POSTGRES_PASSWORD: relay
+      POSTGRES_DB: relay
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    ports: ['127.0.0.1:5432:5432']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U relay -d relay']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [relay]
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes: [redis-data:/data]
+    ports: ['127.0.0.1:6379:6379']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [relay]
+
+  migrate:
+    image: relay-api:local
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment: *backend-env
+    command:
+      [
+        './node_modules/.bin/prisma',
+        'migrate',
+        'deploy',
+        '--schema',
+        'backend/prisma/schema.prisma',
+      ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [relay]
+
+  backend:
+    <<: *backend
+    ports: ['127.0.0.1:3000:3000']
+
+  backend-replica:
+    <<: *backend
+
+  worker:
+    <<: *backend
+    command: ['node', 'backend/dist/worker.js']
+    profiles: ['aws-jobs']
+    healthcheck:
+      disable: true
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    ports: ['8080:80']
+    depends_on:
+      backend:
+        condition: service_healthy
+      backend-replica:
+        condition: service_healthy
+    networks: [relay]
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  relay:
+    driver: bridge

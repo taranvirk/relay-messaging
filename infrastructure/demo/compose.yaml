@@ -1,0 +1,128 @@
+name: relay-demo
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+x-api: &api
+  image: ${RELAY_API_IMAGE:?Set the immutable API image}
+  restart: unless-stopped
+  env_file: app.env
+  environment:
+    NODE_OPTIONS: --max-old-space-size=192
+  mem_limit: 320m
+  cpus: 0.5
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  logging: *logging
+  healthcheck:
+    test: [CMD, wget, -qO-, 'http://localhost:3000/api/health/ready']
+    interval: 15s
+    timeout: 5s
+    retries: 10
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+    redis:
+      condition: service_healthy
+  networks: [private]
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: postgres.env
+    mem_limit: 320m
+    command: [postgres, -c, shared_buffers=64MB, -c, max_connections=40]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U relay -d relay']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    logging: *logging
+    networks: [private]
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    env_file: redis.env
+    mem_limit: 128m
+    command:
+      - /bin/sh
+      - -ec
+      - 'exec redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy noeviction --requirepass "$$REDIS_PASSWORD"'
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    logging: *logging
+    networks: [private]
+
+  migrate:
+    image: ${RELAY_API_IMAGE:?Set the immutable API image}
+    env_file: app.env
+    command: [./node_modules/.bin/prisma, migrate, deploy, --schema, backend/prisma/schema.prisma]
+    mem_limit: 256m
+    logging: *logging
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [private]
+
+  backend:
+    <<: *api
+
+  backend-replica:
+    <<: *api
+
+  frontend:
+    image: ${RELAY_WEB_IMAGE:?Set the immutable web image}
+    restart: unless-stopped
+    mem_limit: 64m
+    volumes: ['./nginx.conf:/etc/nginx/conf.d/default.conf:ro']
+    logging: *logging
+    depends_on:
+      backend:
+        condition: service_healthy
+      backend-replica:
+        condition: service_healthy
+    networks: [private]
+
+  gateway:
+    image: caddy:2.11.7-alpine@sha256:eb4d35b7452d1ab6171fbdbe8d9275b2301dad6dad92115d91e19fb9b24d510f
+    restart: unless-stopped
+    environment:
+      RELAY_HOST: ${RELAY_HOST:?Set the public IPv4 address}
+    ports: ['80:80', '443:443']
+    mem_limit: 128m
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    logging: *logging
+    depends_on: [frontend]
+    networks:
+      edge: {}
+      private:
+        ipv4_address: 172.30.90.10
+
+volumes:
+  postgres-data:
+  redis-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  private:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.90.0/24
+  edge: {}

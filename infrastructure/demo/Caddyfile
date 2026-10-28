@@ -1,0 +1,20 @@
+{
+	admin off
+	# IP-literal clients omit SNI; select the public IP certificate explicitly.
+	default_sni {$RELAY_HOST}
+}
+
+https://{$RELAY_HOST} {
+	tls {
+		issuer acme https://acme-v02.api.letsencrypt.org/directory {
+			profile shortlived
+		}
+	}
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		-Server
+	}
+	reverse_proxy frontend:80
+}

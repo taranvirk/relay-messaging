@@ -1,0 +1,81 @@
+name: Deploy backend
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**', 'package*.json', '.github/workflows/deploy-backend.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: relay-backend-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && vars.AWS_DEPLOYMENT_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build and push immutable image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f backend/Dockerfile -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" .
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "IMAGE=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_ENV"
+      - name: Render task definition
+        run: |
+          aws ecs describe-task-definition --task-definition "${{ vars.ECS_TASK_FAMILY }}" --query taskDefinition > task-definition.json
+          jq 'del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy) | .containerDefinitions[0].image = env.IMAGE' task-definition.json > rendered-task-definition.json
+      - name: Run database migrations before rollout
+        env:
+          ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+          ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+        run: |
+          set -euo pipefail
+          TASK_DEFINITION=$(aws ecs register-task-definition --cli-input-json file://rendered-task-definition.json --query taskDefinition.taskDefinitionArn --output text)
+          NETWORK=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --query 'services[0].networkConfiguration' --output json)
+          TASK=$(aws ecs run-task --cluster "$ECS_CLUSTER" --launch-type FARGATE --task-definition "$TASK_DEFINITION" --network-configuration "$NETWORK" --overrides '{"containerOverrides":[{"name":"backend","command":["./node_modules/.bin/prisma","migrate","deploy","--schema","backend/prisma/schema.prisma"]}]}' --query 'tasks[0].taskArn' --output text)
+          test "$TASK" != None
+          aws ecs wait tasks-stopped --cluster "$ECS_CLUSTER" --tasks "$TASK"
+          EXIT_CODE=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK" --query 'tasks[0].containers[0].exitCode' --output text)
+          test "$EXIT_CODE" = 0
+      - uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: rendered-task-definition.json
+          service: ${{ vars.ECS_SERVICE }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true
+      - name: Roll out matching worker image
+        env:
+          WORKER_FAMILY: ${{ vars.ECS_WORKER_TASK_FAMILY }}
+          ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+        run: |
+          set -euo pipefail
+          aws ecs describe-task-definition --task-definition "$WORKER_FAMILY" --query taskDefinition > worker-task.json
+          jq 'del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy) | .containerDefinitions[0].image = env.IMAGE' worker-task.json > rendered-worker.json
+          WORKER_DEFINITION=$(aws ecs register-task-definition --cli-input-json file://rendered-worker.json --query taskDefinition.taskDefinitionArn --output text)
+          aws ecs update-service --cluster "$ECS_CLUSTER" --service worker --task-definition "$WORKER_DEFINITION"
+          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services worker
+      - name: Verify public readiness
+        run: curl --fail --retry 8 --retry-delay 10 "${{ vars.APPLICATION_URL }}/api/health/ready"
