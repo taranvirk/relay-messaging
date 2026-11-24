@@ -12,3 +12,12 @@ it.each([
     error: { issues: [{ path: ['content'], code: 'too_small' }] },
   });
 });
+
+it('trims surrounding whitespace without changing the message body', () => {
+  const message = createMessageSchema.parse({
+    clientMessageId: 'test-message',
+    content: ' \tHello,  Relay!\n ',
+  });
+
+  expect(message.content).toBe('Hello,  Relay!');
+});
